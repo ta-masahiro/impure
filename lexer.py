@@ -3,11 +3,11 @@ LEXER_VER = 'v0.10 20.07.08'
 import ply.lex as lex
 from fractions import Fraction
 # token list
-reserved = {'set':'SET', 'if':'IF', 'lambda':'LAMBDA','def':'DEF', 'None':'NONE', 'True':'TRUE','False':'FALSE', 
+reserved = {'set':'SET', 'if':'IF', 'lambda':'LAMBDA','def':'DEF', 'None':'NONE', 'True':'TRUE','False':'FALSE','const':'CONST', 
          'is':'IS', 'in':'IN', 'apply':'APPLY', 'call_cc':'CALLCC', 'var':'VAR', 'while':'WHILE', 'macro':'MACRO'}
 tokens = ['SQUOTE','COMMENT', 'STR', 'INT','HEX', 'OCT', 'BIN', 'FLOAT','FRACT', 'PLUS','MINUS','TIMES','POW', 'DIVIDE','IDIV','INC', 'DEC', 
         'LPAREN','RPAREN','LBRAC', 'RBRAC','LBRAK', 'RBRAK',  'CAMMA','COL','SEMICOL','DOTS', 'LET','IDIV_LET','MOD_LET','SR_LET','SL_LET',
-        'ADD_LET', 'SUB_LET', 'MUL_LET', 'DIV_LET', 'COMMENT_', 'AND', 'OR','BAND','BOR','BNOT','BSR','BSL',  
+        'ADD_LET', 'SUB_LET', 'MUL_LET', 'DIV_LET', 'COMMENT_', 'AND', 'OR','BAND','BOR','BNOT','BSR','BSL', 'HAT',
         'EQUAL','NEQ', 'GEQ', 'LEQ', 'GT', 'LT', 'NOT', 'ID', 'PERC'] + list(reserved.values())
         ## 注)
         ## TrueとFalseはreserved token扱いにしないと、「Trueee」等が「True」と「ee」に分けられてしまう
@@ -54,6 +54,7 @@ t_OR     = r'\|\|'
 t_BAND   = r'&'
 t_BOR    = r'\|'
 t_BNOT   = r'\~'
+t_HAT    = r'\^'
 t_BSR    = r'>>'
 t_BSL    = r'<<'
 #
@@ -101,6 +102,13 @@ def t_newline(t):
 t_ignore = ' \t'
 def t_error(t):
      raise SyntaxError("Illegal charactor" + t.value[0])
+#def t_eof(t):
+#    more=input('...')
+#    if more:
+#        lexer.input(more)
+#        return lexer.token()
+#    return None
+
 # builed lexer  
 lexer = lex.lex() 
 

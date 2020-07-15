@@ -1,22 +1,23 @@
-# -*- conig: utf-8 -*
+#i -*- conig: utf-8 -*
 GENERATOR_VER = 'v0.10 20.0709'
+import sys
 import copy
-import pdb
+#import pdb
 from parse import parser
 from hedder import *
 # 2項演算子
 op2_list = {'+':'ADD', '-':'SUB', '*':'MUL', '/':'DIV', '%':'MOD', '//':'IDIV', '**':'POW', 
             '==':'EQ', '!=':'NEQ', '>=':'GEQ', '<=':'LEQ', '>':'GT', '<':'LT', 'is':'IS',
-            'in':'IN', '&':'AND', '|':'OR', '>>':'SHR', '<<':'SHL'}
+            'in':'IN', '&':'AND', '|':'OR', '>>':'SHR', '<<':'SHL', '^':'XOR'}
 # 単項演算子
 op1_list = {'!':'NOT', 'UMINUS':'MINUS', '++':'INC', '--':'DEC', '~':'BNOT'}
 # 関数マクロの展開
 def macrofunction_expand(macro_body, param_list):
-    print("macro body:", macro_body, "\nmacro_param_list:", param_list)
+    #print("macro body:", macro_body, "\nmacro_param_list:", param_list)
     def replace(Ls, Ss, Ds): # リストLs内のリストDsをリストSsに置き換える
         for i in range(len(Ls)):
             if   Ls[i] == Ds:Ls[i] = Ss
-            elif isinstance(Ls[i], list):
+            elif isinstance(Ls[i], list) and Ls[i]!=[]:
                 FLG = True
                 if Ls[i][0] == 'LAMBDA':    #LAMBDAの場合は処理を変える
                     for ex in Ls[i][1]:
@@ -29,7 +30,7 @@ def macrofunction_expand(macro_body, param_list):
     ast = copy.deepcopy(macro_body[2])
     for Ds, Ss in zip(macro_body[1], param_list):
         replace(ast, Ss, Ds)
-    print("macrolastast:", ast)
+    if G[__debug__]:print("macrolastast:", ast)
     return codegen(ast)
 # 末尾再帰処理
 def tail_codegen(ast):
@@ -64,7 +65,7 @@ def tail_codegen(ast):
             a_arg_ast = []      # actual argument 実引数
             d_arg_ast = []      # dummy argument 仮引数
             for ex in var_ast[1]:
-                print(ex)
+                if G[__debug__]:print(ex)
                 if ex[0] == 'VAR':
                     a_arg_ast = a_arg_ast + [['LIT',None]]
                     d_arg_ast = d_arg_ast + [ex]
@@ -72,7 +73,7 @@ def tail_codegen(ast):
                     a_arg_ast = a_arg_ast + [ex[2]]
                     d_arg_ast = d_arg_ast + [ex[1]]
             new_ast = ['FCALL',['LAMBDA', d_arg_ast, ['ML',ast[1][i+1:]]], a_arg_ast]
-            print(new_ast)
+            if G[__debug__]:print(new_ast)
             code = code + tail_codegen(new_ast)
     #　または命令の最後がif式の場合に適用
     elif ast[0] == 'IF':
@@ -224,10 +225,12 @@ def codegen(ast):
         # 辞書リテラルの生成
         elif t == 'DICT': # [DICT pair_list]
             n = len(ast[1])
-            code=[]
-            for ex in reversed(ast[1]):
-                code = code + codegen(ex)
-            code =code + ['DICT',n]
+            if n== 0: code = ['LDC',{}]
+            else:
+                code=[]
+                for ex in reversed(ast[1]):
+                    code = code + codegen(ex)
+                code =code + ['DICT',n]
         # 関数呼び出し
         elif t == 'FCALL': # [FCALL, function, expr_list]
             code = []
@@ -253,7 +256,7 @@ def codegen(ast):
                 code=['LDICT','__CODE__'] + codegen(ast[1]) + ['CALL',1]
         # 予期せぬASD ID
         else:
-            ast_error("Unknown")
+            ast_error("Unknown AST key")
         return Code(code)
 
 def ast_error(msg):
@@ -272,48 +275,70 @@ def handle_callcc(code):
     L[pos] = L[pos + 6:]
     return Code(c)
 
+from termcolor import colored, cprint
 from eval import eval
 from utility import G
-
+import pickle
 def _compile(s):
     r=Ast(parser.parse(s))
     c=codegen(r)
+    code=handle_callcc(c+['STOP'])
     return c
 def _code_view(c):
     return c.view()
 def _eval(c):
     V=eval([], [G], c+['STOP'], 0, [], [])
     return V
+def _load(f_name):
+    with open(f_name, 'rb') as f:
+        c = pickle.load(f)
+    return c
+def _save(c,f_name):
+    with open(f_name,'wb') as f:
+        pickle.dump(c,f)
 
-G.update({'compile':_compile, 'code_view':_code_view,'eval':_eval})
-#s = "repl = lambda() while True: printn((eval(conmpile(input(">"))))[0])"
-from prompt_toolkit import prompt
+G.update({'compile':_compile, 'code_view':_code_view,'eval':_eval,'load':_load,'save':_save})
 
+s_repl = 'repl = lambda() while True: printn((eval(compile(input(colored(">","cyan")))))[0])'
+s_read = 'read = lambda(f) {S="";while (s=readline(f)) != "":S+=s;S}'
+s_import = 'import = lambda(f_name) eval(compile(read(f=open(f_name))))'
+
+G[__debug__] = False
+
+_eval(_compile(s_read))
+_eval(_compile(s_import))
+_eval(_compile('import("lib.py")'))
+_eval(_compile(s_repl))
+#_eval(_compile('repl()'))
+#from prompt_toolkit import prompt
+import pdb
 if __name__ == '__main__':
+    args = sys.argv
+    if not ('-d' in args):
+        # normal mode
+        G[__debug__] = False
+        while True:
+            try:
+                s=input(colored('pure> ', "cyan"))
+                if not s:continue
+                result = Ast(parser.parse(s))
+                code = handle_callcc(codegen(result) + ['STOP'])
+                V=_eval(code)
+                if V[0] is None:continue
+                print(V[0])
+            except Exception as e:
+                cprint(e.__class__.__name__  + ':' + str(e), "red")
+                #print(e)
+                continue
+    # debug mode
+    G[__debug__] = True
     pdb.set_trace()
     while True:
-        try:
-            #s = input('test> ')
-            s = prompt('test>')
-        except EOFError:
-            break
-        if not s:
-            continue
-        try:
-            result = Ast(parser.parse(s))
-            print("AST : = ", result.view())
-        except (SyntaxError, ZeroDivisionError) as e:
-            print(e.__class__.__name__, e)
-            continue
-        try:
-            code = handle_callcc(codegen(result) + ['STOP'])
-            print("CODE: = ", code.view())
-        except SyntaxError as e:
-            print(e.__class_.__name__, e)
-            continue
-        try:
-            v = eval([], [G], code , 0, [], [])
-            print("EVAL: = ", v[0])
-        except (TypeError, IndexError, KeyError, SyntaxError, ValueError, ZeroDivisionError, FileNotFoundError) as e:
-            print(e.__class__.__name__, e)
-            continue
+        s = input(colored('debug> ', 'red'))
+        if not s:continue
+        result = Ast(parser.parse(s))
+        print("AST : = ", result.view())
+        code = handle_callcc(codegen(result) + ['STOP'])
+        print("CODE: = ", code.view())
+        v = eval([], [G], code , 0, [], [])
+        print("EVAL: = ", v[0])

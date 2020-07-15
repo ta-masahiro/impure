@@ -9,7 +9,7 @@ precedence =  ( ('left', 'LET','ADD_LET','SUB_LET','MUL_LET','DIV_LET','IDIV_LET
                 ('right', 'NOT' ), 
                 ('left', 'IS', 'IN', 'GT', 'GEQ', 'LT', 'LEQ', 'NEQ', 'EQUAL'),
                 ('left', 'BOR'),
-                ('left', 'BAND'),
+                ('left', 'BAND', 'HAT'),
                 ('left', 'BSR', 'BSL'),
                 ('left', 'PLUS', 'MINUS'), 
                 ('left', 'TIMES', 'DIVIDE', 'PERC'),
@@ -75,7 +75,7 @@ def p_expr_while(p):
 # 定数macroと関数macro
 def p_expr_macro(p):
     """
-    expr    : MACRO expr
+    expr    : CONST expr
             | MACRO LPAREN RPAREN expr
             | MACRO LPAREN expr_list RPAREN expr
     """
@@ -111,6 +111,7 @@ def p_expr_2op(p):
             | expr NEQ expr
             | expr BAND expr
             | expr BOR expr
+            | expr HAT expr
             | expr BNOT expr
             | expr BSR expr
             | expr BSL expr
@@ -208,7 +209,8 @@ def p_dict(p):
     dict    : LBRAC RBRAC
             | LBRAC pair_list RBRAC
     """
-    p[0] = ['DICT', p[2]]
+    if   len(p) == 3: p[0] = ['DICT',[]]
+    elif len(p) == 4: p[0] = ['DICT', p[2]]
 def p_pair_list(p):
     """
     pair_list   : expr COL expr
@@ -252,7 +254,7 @@ def p_expr_list_bl(p):
     else :p[0] = p[1] + [p[3]]
 #
 def p_error(p):
-    raise SyntaxError("invalid syntax of" + str(p))
+    raise SyntaxError("invalid syntax " + str(p))
 
 parser = yacc.yacc()
 

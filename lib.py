@@ -40,34 +40,34 @@
             loop([],len(L[0])-1)
         }
     ; 
-    range = lambda(l ..) {
-        s=0;
-        e=0;
-        stp=1;
-        n=len(l);
-        if n==1:
-            e=l[0]
-        :
-            if n==2:{
-                s=l[0];
-                e=l[1]
-            }:
-                if n==3:{
-                    s=l[0];
-                    e=l[1];
-                    stp=l[2]
-                }:
-                    [];
+    #range = lambda(l ..) {
+    #    s=0;
+    #    e=0;
+    #    stp=1;
+    #    n=len(l);
+    #    if n==1:
+    #        e=l[0]
+    #    :
+    #        if n==2:{
+    #            s=l[0];
+    #            e=l[1]
+    #        }:
+    #            if n==3:{
+    #                s=l[0];
+    #                e=l[1];
+    #                stp=l[2]
+    #            }:
+    #                [];
 
-        if stp>0 :{
-            loop=lambda(i,r) if i>=e:r:loop(i+stp,r + [i]); 
-            loop(s,[])
-        }:{
-            loop = lambda(i, r) if i<=e:r:loop(i + stp, r + [i]); 
-            loop(s, [])
-        }
-    }
-    ; 
+    #    if stp>0 :{
+    #        loop=lambda(i,r) if i>=e:r:loop(i+stp,r + [i]); 
+    #        loop(s,[])
+    #    }:{
+    #        loop = lambda(i, r) if i<=e:r:loop(i + stp, r + [i]); 
+    #        loop(s, [])
+    #    }
+    #}
+    #; 
     # クロージャによる遅延関数の例
     tarai=lambda(x,y,z) 
         if x<=y: 
@@ -94,13 +94,13 @@
     # たらい回し関数のサンプル
     count = 0;                          # 何回呼出したかのカウンタ
     t = lambda(x, y, z) { 
-        count = count + 1; 
+        count += 1; 
         if x <= y:
 	    z
         :
-            t(  t(x-1, y, z),
-                t(y-1, z, x),
-                t(z-1, x, y)
+            t(  t(x -- , y, z),
+                t(y -- , z, x),
+                t(z -- , x, y)
             )
     }
     ; 
@@ -122,14 +122,14 @@
                 while exp2: exp3
     }
     ; 
-    and  =  macro(exp1, exp2) 
-                if exp1: exp2: False
-    ; 
-    or  =   macro(exp1, exp2)
-                if exp1: True: exp2
+    #and  =  macro(exp1, exp2) 
+    #            if exp1: exp2: False
     #; 
-    #foreach  = macro(x, l, exp) 
-    #            for(i = 0, i<len(l), {x = l[i]; exp; i = i + 1})
+    #or  =   macro(exp1, exp2)
+    #            if exp1: True: exp2
+    #; 
+    for_int = macro(x, l, exp) 
+                for(i = 0, i<len(l), {x = l[i]; exp; i += 1})
     ;
     timeit  = macro(proc) {__t1__ = time(); proc; time() - __t1__}
     ; 
@@ -150,7 +150,7 @@
                 g = lambda(i, a)
                     if i >= N:
                         a:
-                        g(i + 1, fn(a, ls[i]))
+                        g(i ++ , fn(a, ls[i]))
                 ;
                 g(0, a)
                 }

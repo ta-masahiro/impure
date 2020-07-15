@@ -1,0 +1,1 @@
+rlwrap -m -c -a  -q \"  -b'(){}[]\"%#~|!$#' -pCYAN -f'./rlwrap_pure'  python generate.py $1

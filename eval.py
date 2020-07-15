@@ -1,4 +1,4 @@
-# -*- config: utf-8 -* 
+# -*- config: utf-8 -*- 
 EVAL_VER = 'v0.10 20.07.09'
 import copy
 from fractions import Fraction
@@ -47,7 +47,9 @@ def eval(S, E, C, cp, R, EE):
                 break
             if not ff:
                 #print(C[cp:])
-                raise KeyError("name '"+str(v)+"' is not defined")
+                if isinstance(v,str):
+                    raise KeyError("name "+v+" is not defined")
+                else:raise TypeError("Unknown")
         elif inst == 'INC':
             S[ - 1] += 1
         elif inst == 'DEC':
@@ -107,6 +109,9 @@ def eval(S, E, C, cp, R, EE):
             del(S[ - 1])
         elif inst == 'OR':
             S[ - 2] = S[ - 2] | S[ - 1 ]
+            del(S[ - 1])
+        elif inst == 'XOR':
+            S[ - 2] = S[ - 2] ^ S[ - 1 ]
             del(S[ - 1])
         elif inst == 'SHR':
             S[ - 2] = S[ - 2] >> S[ - 1 ]
@@ -367,4 +372,12 @@ def eval(S, E, C, cp, R, EE):
             #print(E)
             raise KeyError('Unknown Code:' + inst)
 
-
+import pickle
+import sys
+ 
+if __name__ == '__main__':
+    args = sys.argv
+    if len(argv)>1:
+        f=open(argv[1])
+        c,g = pickle.load(f)
+        eval([],[g],c,0,[],[])
