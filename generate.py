@@ -1,4 +1,4 @@
-#i -*- conig: utf-8 -*
+# -*- conig: utf-8 -*-
 GENERATOR_VER = 'v0.10 20.0709'
 import sys
 import copy
@@ -32,65 +32,15 @@ def macrofunction_expand(macro_body, param_list):
         replace(ast, Ss, Ds)
     if G[__debug__]:print("macrolastast:", ast)
     return codegen(ast)
-# 末尾再帰処理
-def tail_codegen(ast):
-    # 末尾最適化は命令の最後がfunction callの場合に末尾呼び出しに変換
-    if ast[0] == 'FCALL':
-        code = []
-        n = len(ast[2])
-        for ex in ast[2]:
-            code = code + codegen(ex)
-        code = code + codegen(ast[1]) + ['TCALL', n]
-    elif ast[0] == 'APPLY':
-        code = []
-        n = len(ast[1])
-        for ex in ast[1]:
-            code = code + codegen(ex)
-        code = code + ['TAPL', n]
-    # 複式の場合は最後の命令を調べる
-    elif ast[0] == 'ML':
-        DCL_flg = False
-        code=[]
-        for i in range(len(ast[1])-1):
-                ex = ast[1][i]
-                if ex[0] == 'DCL':
-                    DCL_flg = True
-                    break
-                else:
-                    code = code+codegen(ex) + ['POP']
-        #
-        if DCL_flg == False: code = code + codegen(ast[1][-1])
-        else:
-            var_ast = ast[1][i]
-            a_arg_ast = []      # actual argument 実引数
-            d_arg_ast = []      # dummy argument 仮引数
-            for ex in var_ast[1]:
-                if G[__debug__]:print(ex)
-                if ex[0] == 'VAR':
-                    a_arg_ast = a_arg_ast + [['LIT',None]]
-                    d_arg_ast = d_arg_ast + [ex]
-                elif ex[0] == 'SET' and ex[1][0] == 'VAR':
-                    a_arg_ast = a_arg_ast + [ex[2]]
-                    d_arg_ast = d_arg_ast + [ex[1]]
-            new_ast = ['FCALL',['LAMBDA', d_arg_ast, ['ML',ast[1][i+1:]]], a_arg_ast]
-            if G[__debug__]:print(new_ast)
-            code = code + tail_codegen(new_ast)
-    #　または命令の最後がif式の場合に適用
-    elif ast[0] == 'IF':
-        code = codegen(ast[1]) + \
-            ['TSEL', tail_codegen(ast[2]) + ['RTN'],  tail_codegen(ast[3]) + ['RTN']] 
-    else:
-        code = codegen(ast)
-    return code
 # コード生成
-def codegen(ast):
+def codegen(ast, tail = False):
         #
         t = ast[0]
         # 複式の場合
         if t == 'ML': # [ML [expr expr ...]]
             DCL_flg = False
             code=[]
-            for i in range(len(ast[1])):
+            for i in range(len(ast[1]) - 1):
                 ex = ast[1][i]
                 if ex[0] == 'DCL':
                     DCL_flg = True
@@ -98,8 +48,7 @@ def codegen(ast):
                 else:
                     code = code+codegen(ex) + ['POP']
             #
-            if DCL_flg == False: code.pop()     # 複式中に変数宣言式はなかった
-                                                # 余計な最後のPOPを削除
+            if DCL_flg == False: code = code + codegen(ast[1][ - 1], True)     # 複式中に変数宣言式はなかった
             else:
                 var_ast = ast[1][i]
                 a_arg_ast = []      # actual argument 実引数
@@ -114,10 +63,14 @@ def codegen(ast):
                         d_arg_ast = d_arg_ast + [ex[1]]
                 new_ast = ['FCALL',['LAMBDA', d_arg_ast, ['ML',ast[1][i+1:]]], a_arg_ast]
                 #print(new_ast)
-                code = code + codegen(new_ast)
+                code = code + codegen(new_ast, True)
         # if式
         elif t == 'IF':
-            code = codegen(ast[1]) + ['SEL', codegen(ast[2]) + ['JOIN'],  codegen(ast[3]) + ['JOIN']] 
+            if tail: 
+                code = codegen(ast[1]) + \
+                    ['TSEL', codegen(ast[2], True) + ['RTN'],  codegen(ast[3], True) + ['RTN']] 
+            else:
+                code = codegen(ast[1]) + ['SEL', codegen(ast[2]) + ['JOIN'],  codegen(ast[3]) + ['JOIN']] 
         # 代入式
         elif t == 'SET': # [SET, exp1 exp2]
             # 左辺式になれるのはベクタ参照、関数呼び出し、変数のみ
@@ -142,7 +95,7 @@ def codegen(ast):
                     else:
                         ast_error("許されない仮引数です")
             # 末尾最適化
-            e = tail_codegen(ast[2]) + ['RTN'] #!!!!!!! tail_callしたならret->stop??!!!
+            e = codegen(ast[2], True) + ['RTN'] #!!!!!!! tail_callしたならret->stop??!!!
             code = ['LDF'] + [e] +[args]
         # 変数宣言
         elif t == 'DCL': # [DCL [VAR ...] ...] または [ DCL [SET ...] ...]
@@ -239,18 +192,22 @@ def codegen(ast):
                 # マクロの場合は展開する
                 code = macrofunction_expand(G[ast[1][1]], ast[2])
             else:
-                # 通常の関数呼び出し   
-                n = len(ast[2]) # 引数の数
+                n = len(ast[2])
                 for ex in ast[2]:
                     code = code + codegen(ex)
-                code = code + codegen(ast[1]) + ['CALL', n]
+                # 通常の関数呼び出し
+                if tail:
+                    code = code + codegen(ast[1]) + ['TCALL', n]
+                else:
+                    code = code + codegen(ast[1]) + ['CALL', n]
         # applyで関数呼び出し
         elif t == 'APPLY': # [APPLY expr_list]
             n = len(ast[1])
             code=[]
             for ex in ast[1]:
                 code = code + codegen(ex)
-            code =code + ['APL',n]
+            if tail : code = code + ['TAPL', n]
+            else    : code =code + ['APL',n]
         elif t == 'CALLCC':
                 #__CODE__ = []
                 code=['LDICT','__CODE__'] + codegen(ast[1]) + ['CALL',1]
@@ -283,7 +240,7 @@ def _compile(s):
     r=Ast(parser.parse(s))
     c=codegen(r)
     code=handle_callcc(c+['STOP'])
-    return c
+    return code
 def _code_view(c):
     return c.view()
 def _eval(c):
