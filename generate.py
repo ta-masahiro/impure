@@ -48,7 +48,7 @@ def codegen(ast, tail = False):
                 else:
                     code = code+codegen(ex) + ['POP']
             #
-            if DCL_flg == False: code = code + codegen(ast[1][ - 1], True)     # 複式中に変数宣言式はなかった
+            if DCL_flg == False: code = code + codegen(ast[1][ - 1], tail)     # 複式中に変数宣言式はなかった
             else:
                 var_ast = ast[1][i]
                 a_arg_ast = []      # actual argument 実引数
@@ -63,7 +63,7 @@ def codegen(ast, tail = False):
                         d_arg_ast = d_arg_ast + [ex[1]]
                 new_ast = ['FCALL',['LAMBDA', d_arg_ast, ['ML',ast[1][i+1:]]], a_arg_ast]
                 #print(new_ast)
-                code = code + codegen(new_ast, True)
+                code = code + codegen(new_ast, tail)
         # if式
         elif t == 'IF':
             if tail: 

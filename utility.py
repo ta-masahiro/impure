@@ -6,6 +6,7 @@ import math
 import operator 
 from fractions import Fraction
 import sys
+import os
 import time
 from termcolor import colored,cprint
 
@@ -51,10 +52,12 @@ def _print_f( *args):
     print(args[0].format(*args[1:]), end = '')
 def _time():
     return time.time()
+def _system(str):
+    os.system(str)
 G = {'_':None, 'push':_push, 'pop':_pop, 'isin':isin, 'dict_isin':_dict_isin, 'range':_range, 'str':str,'dict_items':_dict_items, 'dict_keys':_dict_keys, 
         'Fraction':Fraction, 'printn':print, 'print':_print_n, 'printf':_print_f, 'input':input,'int':int,'len':len, 'list':_list, 'dict_values':_dict_values, 
         'list_set':_list_set, 'dict':_dict, 'dict_set':_dict_set, 'dict_ref':_dict_ref, 'open':open, 'close':_close,'stdin':sys.stdin, 'stdout':sys.stdout, 
-        'time':_time, '_time':True, '_code':True, 'readline':_readline, 'cprint':cprint,'colored':colored, 'exit':sys.exit}
+        'time':_time, '_time':True, '_code':True, 'readline':_readline, 'cprint':cprint,'colored':colored, 'exit':sys.exit, 'system':_system}
 G.update(vars(operator))
 G.update(vars(math))
 G['__G__'] = G
