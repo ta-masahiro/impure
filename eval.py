@@ -14,13 +14,13 @@ from hedder import *
 #            'REF','DICT','TSEL','APL','TAPL','LDF','LDICT','LDM','LDM_CL',
 #            ]
 
-def eval(S, E, C, cp, R, EE):
+def eval(S, E, C, cp, R, EE, G):
     #print(S, E,C , cp, R, EE)
     while True:
         inst = C[cp]
         #print('S:', S)
         #print('C:', C[cp:])i
-        #print(E[0])
+        #print(E)
         #if not ('z' in E[0]):
         #print(inst)
         if inst == 'STOP':
@@ -34,22 +34,28 @@ def eval(S, E, C, cp, R, EE):
             if C[cp] == []:S.append([])
             else:S.append(C[cp])
             cp += 1
-        elif inst == 'LD':
-            v = C[cp]
-            cp += 1
-            ff = False
-            for e in E:
-                try:
-                    S.append(e[v])
-                    #print(v, e[v])
-                except:continue
-                ff = True
-                break
-            if not ff:
-                #print(C[cp:])
-                if isinstance(v,str):
-                    raise KeyError("name "+v+" is not defined")
-                else:raise TypeError("Unknown")
+        elif inst == 'LD' : # ,LD (n,m) 
+            n, m = C[cp]
+            #print(n,m)
+            cp +=1
+            if m<0:S.append(E[n][-m-1:])
+            else:S.append(E[n][m])
+        #elif inst == 'LD-' : # ,LD (n,m) m<0の場合を別命令にした
+        #    n, m = C[cp]
+        #    #print(n,m)
+        #    cp +=1
+        #    S.append(E[n][-m+1:])
+        elif inst == 'LDG': # ,LDG val,
+            val = C[cp]
+            if val in G:
+                S.append(G[val])
+                #print("key=",val, " val=",G[val])
+                #C=C[:]
+                #C[cp-1]='LDC'
+                #C[cp]=G[val]
+                #print("change_code:",C[cp-1],C[cp])
+                cp+=1
+            else: raise KeyError('name '+val+' is not defined')
         elif inst == 'INC':
             S[ - 1] += 1
         elif inst == 'DEC':
@@ -149,19 +155,7 @@ def eval(S, E, C, cp, R, EE):
                 #    l = [S.pop()] + l
             #if type(fn) == list and fn[0] == 'CL':
             if isinstance(fn,Userfunction):
-                k = fn[2]
-                #print(k, l)
-                if k != [] and k[ - 1] == '..':
-                    ln =  - len(l) + len(k) - 2
-                    c = l[ln:]
-                    if ln !=  - 1:del(l[ln + 1:])
-                    l[ - 1] = c
-                    #print(l)
-                e = dict(zip(k, l))
-                #print(e)
-                #R.append([C, cp])
-                #EE.append(E)
-                E = [e] + fn[3]
+                E = [l] + fn[2]
                 C = fn[1] 
                 cp = 0
             #elif type(fn) == list and fn[0] == 'CONT':
@@ -184,19 +178,9 @@ def eval(S, E, C, cp, R, EE):
                 #    l = [S.pop()] + l
             #if type(fn) == list and fn[0] == 'CL':
             if isinstance(fn,Userfunction):
-                k = fn[2]
-                #print(k, l)
-                if k != [] and k[ - 1] == '..':
-                    ln =  - len(l) + len(k) - 2
-                    c = l[ln:]
-                    if ln !=  - 1:del(l[ln + 1:])
-                    l[ - 1] = c
-                    #print(l)
-                e = dict(zip(k, l))
-                #print(e)
                 R.append([C, cp])
                 EE.append(E)
-                E = [e] + fn[3]
+                E = [l] + fn[2]
                 C = fn[1] 
                 cp = 0
             #elif type(fn) == list and fn[0] == 'CONT':
@@ -215,19 +199,7 @@ def eval(S, E, C, cp, R, EE):
             #print(fn, l)
             #if type(fn) == list and fn[0] == 'CL':
             if isinstance(fn,Userfunction):
-                k = fn[2]
-                #print(k, l)
-                if k != [] and k[ - 1] == '..':
-                    ln =  - len(l) + len(k) - 2
-                    c = l[ln:]
-                    if ln !=  - 1:del(l[ln + 1:])
-                    l[ - 1] = c
-                #    #print(l)
-                e = dict(zip(k, l ))
-                #print(e)
-                #R.append([C, cp])
-                #EE.append(E)
-                E = [e] + fn[3]
+                E = [l] + fn[2]
                 C = fn[1] 
                 cp = 0
             #elif type(fn) == list and fn[0] == 'CONT':
@@ -245,19 +217,9 @@ def eval(S, E, C, cp, R, EE):
             #print(fn, l)
             #if type(fn) == list and fn[0] == 'CL':
             if isinstance(fn,Userfunction):
-                k = fn[2]
-                #print(k, l)
-                if k != [] and k[ - 1] == '..':
-                    ln =  - len(l) + len(k) - 2
-                    c = l[ln:]
-                    if ln !=  - 1:del(l[ln + 1:])
-                    l[ - 1] = c
-                #    #print(l)
-                e = dict(zip(k, l ))
-                #print(e)
                 R.append([C, cp])
                 EE.append(E)
-                E = [e] + fn[3]
+                E = [l] + fn[2]
                 C = fn[1] 
                 cp = 0
             #elif type(fn) == list and fn[0] == 'CONT':
@@ -270,37 +232,22 @@ def eval(S, E, C, cp, R, EE):
         elif inst == 'RTN':
             E = EE.pop()
             C, cp = R.pop()
-        elif inst == 'SET': # value, SET key, ...  -> value, key, set に変更 
-            #v = S[ - 1]
-            k = S.pop()
-            #k = C[cp]
-            v = S[ - 1]
+        elif inst=='SET': # value,set (n,m)
+            n, m = C[cp]
+            cp += 1
+            E[n][m] = S[-1]
+        elif inst == 'GSET': # value, gset key 
+            key = C[cp]
+            val = S[ - 1]
             #print( "val = ", v)
             #print("key = ", k)
-            #cp += 1
-            ff = False
-            #print(E)
-            for e in E:
-                if k in e:
-                    e[k] = v
-                    ff = True
-                    break
-            if not ff:(E[0])[k] = v
-            #raise KeyError('Unknown Key: ',k)
-        elif inst == 'VSET': # value, ind, vset key, ... ->value, key, ind, vset 
+            cp += 1
+            G[key] = val
+        elif inst == 'VSET': # value, vec, ind, vset 
             ind = S.pop()
-            k = S.pop()
-            v = S[ - 1]
-            #k = C[cp]
-            #cp += 1
-            ff = False
-            #print(E)
-            for e in E:
-                if k in e:
-                    e[k][ind] = v
-                    ff = True
-                    break
-            if not ff:(E[0])[k][ind] = v
+            vec = S.pop()
+            val = S[ - 1]
+            vec[ind] = val
         elif inst == 'DCL':
             k = C[cp]
             cp += 1
@@ -313,8 +260,8 @@ def eval(S, E, C, cp, R, EE):
             cp += 2
             #R.append([C, cp])
             cp = 0
-            if p: C = t_exp
-            else: C = f_exp
+            if p is False: C = f_exp    #!!!注意!!!False以外はTrueと判断させている!!!
+            else: C = t_exp
         elif inst == 'SEL':
             p = S.pop()
             t_exp = C[cp]
@@ -322,8 +269,8 @@ def eval(S, E, C, cp, R, EE):
             cp += 2
             R.append([C, cp])
             cp = 0
-            if p: C = t_exp
-            else: C = f_exp
+            if p is False: C = f_exp
+            else: C = t_exp
         elif inst == 'WHILE':
             p = S.pop()
             back = C[cp]
@@ -342,8 +289,8 @@ def eval(S, E, C, cp, R, EE):
         elif inst == 'LDF':
             k = C[cp + 1]
             #print(k)
-            S.append(Userfunction(['CL', C[cp], C[cp + 1], E]))
-            cp += 2
+            S.append(Userfunction(['CL', C[cp], E]))
+            cp +=1 
         elif inst == 'LDICT':
             S.append(Continuation(['CONT', S[:], E[:], C[cp], R[:], EE[:]]))
             cp += 1

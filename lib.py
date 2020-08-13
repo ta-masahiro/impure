@@ -90,7 +90,7 @@
                       lambda() t(lambda() z() - 1, lambda() x(), lambda() y())); 
              t(lambda()x, lambda()y, lambda()z) 
     }
-    ; 
+    ;  
     # たらい回し関数のサンプル
     count = 0;                          # 何回呼出したかのカウンタ
     t = lambda(x, y, z) { 

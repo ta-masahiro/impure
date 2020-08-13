@@ -3,17 +3,17 @@
 「俺言語」(im)pureを作る
 
 [手段]
-字句/構文解析にはpython plyを使う(面倒なことはしない)
-python llvmliteを持ちいて、最終的に(jit)コンパイラにする
+・字句/構文解析にはpython plyを使う(面倒なことはしない)
+・python llvmliteを持ちいて、最終的に(jit)コンパイラにする
 
 [実行方法]
-python3(pypy3が良)環境、rlwrap
-必要ライブラリはPLY、termcolor、(最終的に)llvmlite
-./pureでreplが起動する
+・python3(pypy3が良)環境、rlwrap
+・必要ライブラリはPLY、termcolor、(最終的に)llvmlite
+・該当ディレクトリ内で./pureでreplが起動する
 
 [できていないこと]
 ・llvm対応がまったくの未
-  現時点ではSECD風中間言語にコンパイルし、Pythonで作ったSECD マシンで解釈実行している(したがってとっても遅い！pypy実行が良とした理由)
+  ※現時点ではSECD風中間言語にコンパイルし、Pythonで作ったSECD マシンで解釈実行している(したがってとっても遅い！pypy実行が良とした理由)
 ・クラス対応がこれから
 ・例外処理未対応
 
@@ -63,8 +63,8 @@ python3(pypy3が良)環境、rlwrap
 
 2項演算式		式1 += 式2		加算代入	式2の評価結果を式1の評価結果に代入する
 			式1 -= 式2		減算代入	式1 = 式1 + 式2
-			*= :
-			/= :
+			式1 *= 式2		乗算代入
+			式1 /= 式2		除算代入
 			%= :
 			//=:
 			
@@ -77,13 +77,15 @@ python3(pypy3が良)環境、rlwrap
 			expr [ expr ]		ベクタ参照
 			expr ( expr_list )	関数呼出し
 
-if式
+if式			if 式1 : 式2 : 式3				式1の評価結果が真なら式2を評価しその値を返す。式3は評価しない
+			if 式1 : 式2 
 
 
-while式
+while式			while 式1 : 式2		
 
-lambda式
-2
+lambda式		lambda ( ) 式
+			lambda ( 式リスト ) 式
+			lambda (
 複式
 
 優先式
