@@ -10,6 +10,18 @@ INST_CODE = [
     'REF','DICT','TSEL','APL','TAPL','LDF','LDICT','LDM','LDM_CL',
     ]
 
+def _view(self):
+    #return str(list(self))
+    r = '[ '
+    for s in self:
+        if isinstance(s, list):
+            r = r + _view(s)
+        elif isinstance(s, tuple):
+            r = r + '(' +str(s[0])+' '+str(s[1])+') '
+        else:
+            r = r + str(s) + ' '
+    return r + '] ' 
+
 class Ast(list):
     def __repr__(self):
         return "<ast at"+str(hex(id(self)))+">"
@@ -22,7 +34,7 @@ class Code(list):
     def __repr__(self):
         return "<code at "+str(hex(id(self)))+">"
     def view(self):
-        return str(list(self))
+        return _view(self)
     #def exec(self,machine,env):
     #    return eval.eval([],env,self,0,[],[])
 
@@ -30,13 +42,13 @@ class Userfunction(list):
     def __repr__(self):
         return "<user function at "+str(hex(id(self)))+">"
     def view(self):
-        return str(self[:3])
+        return _view(self)
 
 class Continuation(list):
     def __repr__(self):
         return "<continuation at "+str(hex(id(self)))+">"
     def view(self):
-        return str(list(self))
+        return _view(list)
 
 class Macro(list):
     def __repr__(self):

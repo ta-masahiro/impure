@@ -49,6 +49,28 @@ def codegen(ast, env, tail = False):
         #
         t = ast[0]
         # 複式の場合
+        #if t == 'ML':
+        #    a_arg_ast, d_arg_ast = [], []   #実引数、仮引数
+        #    ml_ast_body = []
+        #    for ex in ast[1]:
+        #        if ex[0] == 'DCL':
+        #            for exx in ex[1]:
+        #                if exx[0]  == 'VAR':
+        #                    a_arg_ast += [['LIT', None]]
+        #                    d_arg_ast += exx
+        #                if exx[0] == 'SET' and exx[1][0] == 'VAR':
+        #                    a_arg_ast += [exx[2]] 
+        #                    d_arg_ast += [exx[1]]
+        #        else:
+        #            ml_ast_body += ex
+        #    if a_arg_ast != []:
+        #        new_ast = ['FCALL', ['LAMBDA', d_arg_ast, ['ML', ml_ast_body]], a_arg_ast] 
+        #        code = codegen(new_ast, env, tail)
+        #    else:# dcl文はないので残った宣言されない代入文を処理する
+        #        code = []
+        #        for ex in ml_ast_body:
+        #            codegen(ex, env)
+        #
         if t == 'ML': # [ML [expr expr ...]]
             DCL_flg = False
             code=[]
@@ -317,8 +339,8 @@ def _save(c,f_name):
 G.update({'compile':_compile, 'code_view':_code_view,'eval':_eval,'load':_load,'save':_save, 'optimize':optimize_global})
 
 s_repl = 'repl = lambda() while True: printn((eval(compile(input(colored(">","cyan")))))[0])'
-s_read = 'read = lambda(f) {S="";while (s=readline(f)) != "":S+=s;S}'
-s_import = 'import = lambda(f_name) eval(compile(read(f=open(f_name))))'
+s_read = 'read = lambda(f) {var s, S="";while (s=readline(f)) != "":S+=s;S}'
+s_import = 'import = lambda(f_name) eval(compile(read(open(f_name))))'
 
 G[__debug__] = False
 

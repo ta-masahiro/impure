@@ -3,7 +3,7 @@
     # 任意個数引数の加算
     sum = lambda(x) (l = lambda(i, s) if i < 0:s:l(i - 1, s + x[i]))(len(x) - 1, 0); 
     add = lambda(x ..) {
-        var sum; 
+        var sum,  
         n=len(x); 
         sum = lambda(s,i) 
             if i>=n: 
@@ -16,6 +16,7 @@
     # mapref([[1, 2, 3], [4, 5, 6], [7, 8, 9]], 1) = [2, 5, 8]
     #def mapref(L,n) = {
     mapref = lambda(L, n) {
+        var loop; 
         loop=lambda(i,s) 
             if i<0 :
                 s 
@@ -26,6 +27,7 @@
     ;
     map = lambda(f,L ..) 
         if len(L)==1: {
+            var loop; 
             loop=lambda(s,i) 
                 if i<0:
                     s
@@ -81,6 +83,7 @@
         }
     ; # 形式的に完全な遅延関数化
     tarai1 = lambda(x, y, z) {
+            var t; 
             t = lambda(x, y, z)
                 if x()<= y():
                     y()
@@ -93,21 +96,21 @@
     ;  
     # たらい回し関数のサンプル
     count = 0;                          # 何回呼出したかのカウンタ
-    t = lambda(x, y, z) { 
+    tak = lambda(x, y, z) { 
         count += 1; 
         if x <= y:
 	    z
         :
-            t(  t(x -- , y, z),
-                t(y -- , z, x),
-                t(z -- , x, y)
+            tak(tak(x -- , y, z),
+                tak(y -- , z, x),
+                tak(z -- , x, y)
             )
     }
     ; 
     # メモ化関数
     memois = lambda(f) {
         # d = dict([1],[1]);
-        d = {}; 
+        var d = {}; 
         lambda(args ..) 
             if dict_isin(d, args):
                 dict_ref(d, args)
@@ -134,7 +137,7 @@
     timeit  = macro(proc) {__t1__ = time(); proc; time() - __t1__}
     ; 
     filter  = lambda(f, l) {
-                N=len(l);
+                var g, N=len(l);
                 g   = lambda(i, s)
                     if i>= N:
                         s
@@ -146,7 +149,7 @@
     }
     ; 
     reduce   =  lambda(fn, a, ls) {
-                N = len(ls); 
+                var g, N = len(ls); 
                 g = lambda(i, a)
                     if i >= N:
                         a:
@@ -156,6 +159,7 @@
                 }
     ;
     fold_right=lambda(fn,a,ls) {
+                varf; 
                 f = lambda(a,i)
                     if i<0:
                         a:
@@ -166,8 +170,8 @@
     ; 
     min  = lambda(v..) reduce(lambda(x, y) if x <= y:x:y, inf, v ); 
     max  = lambda(v..) reduce(lambda(x, y) if x < y:y:x,  -inf, v); 
-    fib     = lambda(n) (f = lambda(n, a, b) if n == 0: b:   f(n - 1, a + b, a)) (n, 1, 0); 
-    fact    = lambda(n) (f = lambda(n, a) if n == 0: a: f(n - 1, a * n))(n, 1);
+    fib     = lambda(n) {var f; f = lambda(n, a, b) if n == 0: b:   f(n - 1, a + b, a); f(n, 1, 0)}; 
+    fact    = lambda(n) {var f; f = lambda(n, a) if n == 0: a: f(n - 1, a * n); f(n, 1)};
     # random
     _randseed = int(modf(time())[0] * (2 ** 32));  
     _randseed64 = int(modf(time())[0] * (2 ** 64)); 
@@ -178,7 +182,7 @@
     randrange = lambda(n, m) int(rand64() * (m - n + 1) / (2 ** 64)) + n; 
     #
     for_each     = lambda(fn, vs..){
-                        N = len(vs[0]);
+                        var l,  N = len(vs[0]);
                         (
                         l = lambda(i)
                                 if i >= N: 
@@ -190,7 +194,7 @@
                         )(0)
                     }
     ;
-    readtext     = lambda(f) {t = ""; while (s = readline(f)) != "":t = t + s; t }; 
-    readbuff     = lambda(f) {b = []; while (s = readline(f)) != "": b = b + [s]; b};
+    readtext     = lambda(f) {var s, t = ""; while (s = readline(f)) != "":t = t + s; t }; 
+    readbuff     = lambda(f) {var s, b = []; while (s = readline(f)) != "": b = b + [s]; b};
     None
  }
