@@ -109,8 +109,8 @@
     ; 
     # メモ化関数
     memois = lambda(f) {
-        # d = dict([1],[1]);
-        var d = {}; 
+        var d = dict(None, None);
+        #var d = {}; 
         lambda(args ..) 
             if dict_isin(d, args):
                 dict_ref(d, args)

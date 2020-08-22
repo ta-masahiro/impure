@@ -110,11 +110,13 @@ def codegen(ast, env, tail = False):
             # 左辺式になれるのはベクタ参照、関数呼び出し、変数のみ
             if ast[1][0] == 'VREF':
                 #code = codegen(ast[2]) + ['LDC', ast[1][1][1]] + codegen(ast[1][2]) + ['VSET']
-                pos = var_location(ast[1][1][1], env)
-                if pos: code = codegen(ast[2], env) + ['LD', pos] + codegen(ast[1][2], env) + [VSET]
-                else  : code = codegen(ast[2], env) + ['LDG', ast[1][1][1]] + codegen(ast[1][2], env) + [VSET]
-            #elif ast[1][0] == 'FCALL':
-            #
+                code = codegen(ast[2], env) + codegen(ast[1], env)
+                code[ - 1] = 'VSET' # 最後のVREFをVSETに置き換えればよい
+                #pos = var_location(ast[1][1][1], env)
+                #if pos: code = codegen(ast[2], env) + ['LD', pos] + codegen(ast[1][2], env) + ['VSET']
+                #else  : code = codegen(ast[2], env) + ['LDG', ast[1][1][1]] + codegen(ast[1][2], env) + ['VSET']
+            elif ast[1][0] == 'FCALL': #関数定義式とする
+                code = codegen(['SET', ast[1][1], ['LAMBDA', ast[1][2], ast[2]]], env)
             elif ast[1][0] == 'VAR':
                 #code = codegen(ast[2]) + ['LDC', ast[1][1], 'SET']
                 pos = var_location(ast[1][1], env)
