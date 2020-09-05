@@ -67,6 +67,7 @@ def eval(S, E, C, cp, R, EE, G):
         elif inst == 'ADD':
             S[ - 2] += S[ - 1]
             del(S[ - 1])
+            #S.append(S.pop() + S.pop())
         elif inst == 'SUB':
             S[ - 2] -= S[ - 1]
             del(S[ - 1])

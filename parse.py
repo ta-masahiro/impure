@@ -72,6 +72,10 @@ def p_expr_dcl(p):
 def p_expr_while(p):
     '    expr    : WHILE expr COL expr '
     p[0]=['WHILE',p[2],p[4]]
+# クラス定義
+def p_expr_class_def(p):
+    '   expr    : CLASS expr_list '
+    p[0] = ['CLASS', p[2]]
 # 定数macroと関数macro
 def p_expr_macro(p):
     """
@@ -143,6 +147,7 @@ def p_factor(p):
             | apply
             | call_cc
             | LPAREN expr RPAREN
+            | property
     """
     if len(p) == 2:
         p[0] = p[1]
@@ -252,7 +257,12 @@ def p_expr_list_bl(p):
     """
     if len(p) == 2:p[0] = [p[1]]
     else :p[0] = p[1] + [p[3]]
-#
+# クラスプロパティの参照
+def p_factor_property(p):
+    """
+    property  : factor DOT ID
+    """
+    p[0] = ['PROP', p[1], p[3]]
 def p_error(p):
     raise SyntaxError("invalid syntax " + str(p))
 

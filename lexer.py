@@ -4,9 +4,9 @@ import ply.lex as lex
 from fractions import Fraction
 # token list
 reserved = {'set':'SET', 'if':'IF', 'lambda':'LAMBDA','def':'DEF', 'None':'NONE', 'True':'TRUE','False':'FALSE','const':'CONST', 
-         'is':'IS', 'in':'IN', 'apply':'APPLY', 'call_cc':'CALLCC', 'var':'VAR', 'while':'WHILE', 'macro':'MACRO'}
+         'is':'IS', 'in':'IN', 'apply':'APPLY', 'call_cc':'CALLCC', 'var':'VAR', 'while':'WHILE', 'macro':'MACRO', 'class':'CLASS'}
 tokens = ['SQUOTE','COMMENT', 'STR', 'INT','HEX', 'OCT', 'BIN', 'FLOAT','FRACT', 'PLUS','MINUS','TIMES','POW', 'DIVIDE','IDIV','INC', 'DEC', 
-        'LPAREN','RPAREN','LBRAC', 'RBRAC','LBRAK', 'RBRAK',  'CAMMA','COL','SEMICOL','DOTS', 'LET','IDIV_LET','MOD_LET','SR_LET','SL_LET',
+        'LPAREN','RPAREN','LBRAC', 'RBRAC','LBRAK', 'RBRAK',  'CAMMA','COL','SEMICOL','DOT', 'DOTS', 'LET','IDIV_LET','MOD_LET','SR_LET','SL_LET',
         'ADD_LET', 'SUB_LET', 'MUL_LET', 'DIV_LET', 'COMMENT_', 'AND', 'OR','BAND','BOR','BNOT','BSR','BSL', 'HAT',
         'EQUAL','NEQ', 'GEQ', 'LEQ', 'GT', 'LT', 'NOT', 'ID', 'PERC'] + list(reserved.values())
         ## 注)
@@ -32,6 +32,7 @@ t_RBRAK  = r'\]'
 t_CAMMA  = r','
 t_COL    = r':'
 t_SEMICOL= r';'
+t_DOT    = r'\.'
 t_DOTS   = r'\.\.'
 t_LET    = r'='
 t_ADD_LET = r'\+='

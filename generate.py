@@ -117,6 +117,8 @@ def codegen(ast, env, tail = False):
                 #else  : code = codegen(ast[2], env) + ['LDG', ast[1][1][1]] + codegen(ast[1][2], env) + ['VSET']
             elif ast[1][0] == 'FCALL': #関数定義式とする
                 code = codegen(['SET', ast[1][1], ['LAMBDA', ast[1][2], ast[2]]], env)
+            elif ast[1][0]  == 'APPLY':
+                code = codegen(['SET', ast[1][1][0], ['LAMBDA', ast[1][1][1:] + ['..'], ast[2]]], env)
             elif ast[1][0] == 'VAR':
                 #code = codegen(ast[2]) + ['LDC', ast[1][1], 'SET']
                 pos = var_location(ast[1][1], env)
@@ -257,6 +259,10 @@ def codegen(ast, env, tail = False):
         elif t == 'CALLCC':
                 #__CODE__ = []
                 code=['LDICT','__CODE__'] + codegen(ast[1], env) + ['CALL',1]
+        elif t == 'CLASS':
+            pass
+        elif t == 'PROP':
+            pass
         # 予期せぬASD ID
         else:
             ast_error("Unknown AST key")
