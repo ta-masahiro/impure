@@ -80,7 +80,7 @@ def codegen(ast, env, tail = False):
                     DCL_flg = True
                     break
                 else:
-                    code = code+codegen(ex, env) + ['POP']
+                    code = code+codegen(ex, env) + ['DROP']
             #
             if DCL_flg == False: code = code + codegen(ast[1][ - 1], env, tail)     # 複式中に変数宣言式はなかった
             else:
@@ -146,15 +146,15 @@ def codegen(ast, env, tail = False):
             n = len(ast[1])
             for ex in ast[1]:
                 if   ex[0] == 'VAR':
-                    code = code + ['DCL', ex[1]] + ['POP']            
+                    code = code + ['DCL', ex[1]] + ['DROP']            
                 elif ex[0] == 'SET' and ex[1][0] == 'VAR':
-                    code = code + ['DCL', ex[1][0], 'POP'] + codegen(ex, env) + ['POP']
+                    code = code + ['DCL', ex[1][0], 'DROP'] + codegen(ex, env) + ['DROP']
                 else: ast_error("変数宣言には許されない式です")
             code.pop() # よけいなPOPを削除
         # WHILE
         elif t == 'WHILE': # [WHILE exp1 exp2]
             code_sexp = codegen(ast[1], env)
-            code = code_sexp + ['WHILE', len(code_sexp),  codegen(ast[2], env) + ['POP', 'JOIN']]
+            code = code_sexp + ['WHILE', len(code_sexp),  codegen(ast[2], env) + ['DROP', 'JOIN']]
         # 定数マクロ
         elif t=='LDM': # [LDM expr]
             # ASTのまま積む
@@ -380,7 +380,7 @@ if __name__ == '__main__':
                 continue
     # debug mode
     G[__debug__] = True
-    pdb.set_trace()
+    #pdb.set_trace()
     while True:
         s = input(colored('debug> ', 'red'))
         if not s:continue

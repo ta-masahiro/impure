@@ -196,5 +196,6 @@
     ;
     readtext     = lambda(f) {var s, t = ""; while (s = readline(f)) != "":t = t + s; t }; 
     readbuff     = lambda(f) {var s, b = []; while (s = readline(f)) != "": b = b + [s]; b};
+    vm(s)        = system("./vm-test -s \""+str(code_view(compile(s)))+"\"");
     None
  }

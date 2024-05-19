@@ -311,7 +311,7 @@ def eval(S, E, C, cp, R, EE, G):
                 v=S.pop()
                 d[k] = v
             S.append(d)
-        elif inst == 'POP':
+        elif inst == 'DROP':
             del(S[ -1])
         #elif inst == '__CODE__':
         #    S.append('Continuation!')
